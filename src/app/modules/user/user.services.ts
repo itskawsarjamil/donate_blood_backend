@@ -2,7 +2,7 @@ import prisma from '../../utils/prisma';
 import { TUser_Profile } from './user.interface';
 
 const createUser = async (payload: TUser_Profile) => {
-  console.log(payload);
+  // console.log(payload);
   // const { name, email, bloodType, location, availability, ...remaining } =
   //   payload;
   // console.log(payload);
