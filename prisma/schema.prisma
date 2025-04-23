@@ -13,3 +13,62 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum BloodGroup {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id              String       @id @default(uuid())
+  name            String
+  email           String       @unique
+  password        String
+  bloodType       BloodGroup
+  location        String
+  availability    Boolean
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  UserProfile     UserProfile?
+  RequestsMade    Request[]    @relation("requester")
+  RequestsRecieve Request[]    @relation("donar")
+}
+
+model UserProfile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  bio              String
+  age              Int
+  lastDonationDate String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Request {
+  id              String        @id @default(uuid())
+  donorId         String
+  donor           User          @relation("donar", fields: [donorId], references: [id])
+  requesterId     String
+  requester       User          @relation("requester", fields: [requesterId], references: [id])
+  phoneNumber     String
+  dateOfDonation  String
+  hospitalName    String
+  hospitalAddress String
+  reason          String
+  requestStatus   RequestStatus @default(PENDING)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
