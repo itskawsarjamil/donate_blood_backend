@@ -5,22 +5,26 @@ const createUser = async (payload: TUser_Profile) => {
   // console.log(payload);
   // const { name, email, bloodType, location, availability, ...remaining } =
   //   payload;
+  const { bio, age, lastDonationDate, ...remaining } = payload;
   // console.log(payload);
-  // const result = await prisma.user.create({
-  //   data: {
-  //     name,
-  //     email,
-  //     bloodType,
-  //     location,
-  //     availability,
-  //     password: 'asdfgh',
-  //     UserProfile: {
-  //       create: {},
-  //     },
-  //   },
-  // });
-  // return result;
-  return null;
+  const result = await prisma.user.create({
+    data: {
+      ...remaining,
+      password: 'abcd',
+      UserProfile: {
+        create: {
+          bio,
+          age,
+          lastDonationDate,
+        },
+      },
+    },
+    include: {
+      UserProfile: true,
+    },
+  });
+  return result;
+  // return null;
 };
 
 const getSingleUserFromDB = async (id: string) => {

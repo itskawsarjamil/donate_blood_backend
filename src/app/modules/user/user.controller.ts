@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { userServices } from './user.services';
+import sendResponse from '../../utils/sendResponse';
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
-  console.log(req.body);
   const result = await userServices.createUser(req.body);
   // console.log(result);
-  res.status(200).json({
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
     message: 'user creation successfull',
     data: result,
