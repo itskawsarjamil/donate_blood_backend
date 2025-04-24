@@ -11,3 +11,13 @@ export type TUser_Profile = {
   age: number;
   lastDonationDate: string;
 };
+
+export type TUserUpdate = {
+  name?: string;
+  bloodType?: BloodGroup;
+  location?: string;
+  availability?: boolean;
+  bio?: string;
+  age?: number;
+  lastDonationDate?: string;
+};

@@ -15,6 +15,19 @@ const createUserValidationSchema = z.object({
   }),
 });
 
+const updateUserValidationSchema = z.object({
+  body: z.object({
+    name: z.string().optional(),
+    bloodType: z.enum(bloodType).optional(),
+    location: z.string().optional(),
+    availability: z.boolean().optional(),
+    bio: z.string().optional(),
+    age: z.number().optional(),
+    lastDonationDate: z.string().optional(),
+  }),
+});
+
 export const userValidationSchema = {
   createUserValidationSchema,
+  updateUserValidationSchema,
 };

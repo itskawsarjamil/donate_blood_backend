@@ -7,15 +7,15 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
   const result = await userServices.createUser(req.body);
   // console.log(result);
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: 201,
     success: true,
-    message: 'user creation successfull',
+    message: 'user registered successfully',
     data: result,
   });
 });
 
 const getSingleUser = catchAsync(async (req, res) => {
-  const result = await userServices.getSingleUserFromDB(req.params.id);
+  const result = await userServices.getSingleUserFromDB(req.params.userId);
   res.status(200).json({
     success: true,
     message: 'user finding successfull',
@@ -32,7 +32,10 @@ const getAllUser = catchAsync(async (req, res) => {
 });
 
 const updateSingleUser = catchAsync(async (req, res) => {
-  const result = await userServices.updateUserIntoDB(req.params.id, req.body);
+  const result = await userServices.updateUserIntoDB(
+    req.params.userId,
+    req.body,
+  );
   res.status(200).json({
     success: true,
     message: 'user update successfull',
@@ -41,7 +44,7 @@ const updateSingleUser = catchAsync(async (req, res) => {
 });
 
 const deleteSingleUser = catchAsync(async (req, res) => {
-  const result = await userServices.deleteSingleUserFromDB(req.params.id);
+  const result = await userServices.deleteSingleUserFromDB(req.params.userId);
   res.status(200).json({
     success: true,
     message: 'user deletion complete',

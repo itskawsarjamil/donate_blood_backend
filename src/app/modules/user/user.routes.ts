@@ -11,10 +11,14 @@ router.post(
   userController.createUser,
 );
 
-router.get('/get-single-user', userController.getSingleUser);
+router.get('/get-single-user/:userId', userController.getSingleUser);
 router.get('/get-all-user', userController.getAllUser);
 
-router.patch('/update-single-user', userController.updateSingleUser);
-router.patch('/delete-single-user', userController.deleteSingleUser);
+router.patch(
+  '/update-single-user/:userId',
+  validateRequest(userValidationSchema.updateUserValidationSchema),
+  userController.updateSingleUser,
+);
+router.delete('/delete-single-user/:userId', userController.deleteSingleUser);
 
 export const userRoutes = router;

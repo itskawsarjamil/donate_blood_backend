@@ -1,19 +1,17 @@
-import js from '@eslint/js';
+import pluginJs from '@eslint/js';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 import { defineConfig } from 'eslint/config';
 import prettier from 'eslint-config-prettier';
 
 export default defineConfig([
-  {
-    files: ['**/*.{js,mjs,cjs,ts}'],
-    plugins: { js },
-    extends: ['js/recommended'],
-  },
+  pluginJs.configs.recommended,
+
+  ...tseslint.configs.recommended,
   {
     files: ['**/*.{js,mjs,cjs,ts}'],
     rules: {
-      'no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': 'warn',
       'no-unused-expressions': 'error',
       'prefer-const': 'error',
       'no-console': 'warn',
@@ -32,6 +30,5 @@ export default defineConfig([
     },
   },
 
-  tseslint.configs.recommended,
   prettier,
 ]);
