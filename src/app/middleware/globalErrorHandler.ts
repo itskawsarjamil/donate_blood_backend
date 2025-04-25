@@ -1,24 +1,98 @@
-import { Request, Response, NextFunction, ErrorRequestHandler } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import config from '../config';
+import { ZodError } from 'zod';
+import { TErrorSources } from '../interfaces/errorTypes';
+import handleZodError from '../errors/handleZodError';
+import { Prisma } from '../../../generated/prisma';
 
-type TErrorSources = {
-  path: string | undefined;
-  message: string | undefined;
-}[];
-const globalErrorHandler: ErrorRequestHandler = (error, req, res, next) => {
-  const status = 500;
-  const message = 'something went wrong';
-  const errorSources: TErrorSources = [
+const globalErrorHandler = (
+  error: any,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  let flag = 0;
+  let status = 500;
+  let message = 'something went wrong';
+  let issues: TErrorSources = [
     {
       path: '',
       message: '',
     },
   ];
-  return res.status(status).json({
+  if (error instanceof ZodError) {
+    flag = 1;
+    const errorData = handleZodError(error);
+    status = errorData.statusCode;
+    message = errorData.message;
+    issues = errorData.errorSources;
+  }
+  // Prisma known errors
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    switch (error.code) {
+      case 'P2002': {
+        const target = (error.meta?.target as string[])?.join(', ');
+        status = 409;
+        message = 'Duplicate field value';
+        issues = [
+          {
+            path: target,
+            message: '',
+          },
+        ];
+        break;
+      }
+
+      case 'P2025': {
+        status = 404;
+        message = 'Resource not found';
+        break;
+      }
+
+      case 'P2003': {
+        status = 400;
+        message = 'foreign key constraint failed';
+        break;
+      }
+
+      default:
+        status = 500;
+        message = `Prisma known request error ${error.code}`;
+        break;
+    }
+  }
+  // Prisma validation errors
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    status = 400;
+    message = 'Validation error: Check the provided data';
+    error = error.message;
+  }
+
+  // Prisma initialization errors
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    status = 500;
+    message = 'Prisma failed to connect to the database';
+  }
+
+  // Prisma panic errors (unexpected)
+  if (error instanceof Prisma.PrismaClientRustPanicError) {
+    status = 500;
+    message = 'Unexpected Prisma error: Rust panic';
+  }
+
+  res.status(status).json({
     success: false,
     message,
-    errorSources,
-    error,
+    // errorDetails: flag
+    //   ? {
+    //       issues,
+    //     }
+    //   : 'error',
+    errorDetails: {
+      issues,
+    },
+    error: config.node_env === 'development' ? error : null,
     stack: config.node_env === 'development' ? error?.stack : null,
   });
 };

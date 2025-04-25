@@ -76,6 +76,7 @@ const updateUserIntoDB = async (id: string, payload: TUserUpdate) => {
     },
     data: {
       ...finalUserData,
+      something: '',
       UserProfile: {
         update: {
           data: {
