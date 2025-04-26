@@ -13,25 +13,25 @@ const createUser = async (payload: TUser_Profile) => {
   const { bio, age, lastDonationDate, password, ...remaining } = payload;
   // console.log(payload);
   const hashedPassword = await bcrypt.hash(password, 12);
-  console.log(hashedPassword);
-  // const result = await prisma.user.create({
-  //   data: {
-  //     ...remaining,
-  //     password: hashedPassword,
-  //     UserProfile: {
-  //       create: {
-  //         bio,
-  //         age,
-  //         lastDonationDate,
-  //       },
-  //     },
-  //   },
-  //   include: {
-  //     UserProfile: true,
-  //   },
-  // });
-  // return result;
-  return null;
+  // console.log(hashedPassword);
+  const result = await prisma.user.create({
+    data: {
+      ...remaining,
+      password: hashedPassword,
+      UserProfile: {
+        create: {
+          bio,
+          age,
+          lastDonationDate,
+        },
+      },
+    },
+    include: {
+      UserProfile: true,
+    },
+  });
+  return result;
+  // return null;
 };
 
 const getSingleUserFromDB = async (id: string) => {
