@@ -3,7 +3,7 @@ import { BloodGroup } from '../../../../generated/prisma';
 export type TUser_Profile = {
   name: string;
   email: string;
-  password?: string;
+  password: string;
   bloodType: BloodGroup;
   location: string;
   availability: boolean;

@@ -4,31 +4,34 @@ import prisma from '../../utils/prisma';
 import { TUser_Profile, TUserUpdate } from './user.interface';
 import { Prisma } from '../../../../generated/prisma';
 import { paginationHelper } from '../../utils/paginationhelper';
+import bcrypt from 'bcrypt';
 
 const createUser = async (payload: TUser_Profile) => {
   // console.log(payload);
   // const { name, email, bloodType, location, availability, ...remaining } =
   //   payload;
-  const { bio, age, lastDonationDate, ...remaining } = payload;
+  const { bio, age, lastDonationDate, password, ...remaining } = payload;
   // console.log(payload);
-  const result = await prisma.user.create({
-    data: {
-      ...remaining,
-      password: 'abcd',
-      UserProfile: {
-        create: {
-          bio,
-          age,
-          lastDonationDate,
-        },
-      },
-    },
-    include: {
-      UserProfile: true,
-    },
-  });
-  return result;
-  // return null;
+  const hashedPassword = await bcrypt.hash(password, 12);
+  console.log(hashedPassword);
+  // const result = await prisma.user.create({
+  //   data: {
+  //     ...remaining,
+  //     password: hashedPassword,
+  //     UserProfile: {
+  //       create: {
+  //         bio,
+  //         age,
+  //         lastDonationDate,
+  //       },
+  //     },
+  //   },
+  //   include: {
+  //     UserProfile: true,
+  //   },
+  // });
+  // return result;
+  return null;
 };
 
 const getSingleUserFromDB = async (id: string) => {
