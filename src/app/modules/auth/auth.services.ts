@@ -4,6 +4,7 @@ import AppError from '../../errors/apiError';
 import { jwtHelper } from '../../utils/jwtHelper';
 import prisma from '../../utils/prisma';
 import bcrypt from 'bcrypt';
+import sendEmail from '../../utils/sendEmail';
 const login = async (payload: { identifier: string; password: string }) => {
   //   console.log(payload);
   const user = await prisma.user.findFirst({
@@ -108,9 +109,77 @@ const changePassword = async (
   return null;
 };
 
-const forgetPassword = async (id: string) => {};
+const forgetPassword = async (payload: { id: string }) => {
+  const userData = await prisma.user.findFirst({
+    where: {
+      id: payload.id,
+    },
+  });
+  if (!userData) {
+    throw new AppError(404, 'user not found');
+  }
+  const newTempToken = jwtHelper.generateToken(
+    { email: userData.email },
+    config.jwt.jwt_secret as string,
+    '5m',
+  );
+  const resetPassLink = `${config.reset_pass_link}?id=${userData.id}&token=${newTempToken}`;
+  sendEmail(
+    userData.email,
+    `
+        <div>
+            <p>Dear User,</p>
+            <p>Your password reset link 
+                <a href=${resetPassLink}>
+                    <button>
+                        Reset Password
+                    </button>
+                </a>
+            </p>
 
-const resetPassword = async (payload: { id: string; token: string }) => {};
+        </div>
+        `,
+  );
+};
+
+const resetPassword = async (
+  token: string,
+  payload: { id: string; password: string },
+) => {
+  //   console.log({ token, payload });
+
+  const userData = await prisma.user.findUniqueOrThrow({
+    where: {
+      id: payload.id,
+    },
+  });
+
+  if (!userData) {
+    throw new AppError(404, 'user not found');
+  }
+
+  const isValidToken = jwtHelper.verifyToken(
+    token,
+    config.jwt.reset_pass_secret as Secret,
+  );
+
+  if (!isValidToken) {
+    throw new AppError(403, 'Forbidden!');
+  }
+
+  // hash password
+  const password = await bcrypt.hash(payload.password, 12);
+
+  // update into database
+  await prisma.user.update({
+    where: {
+      id: payload.id,
+    },
+    data: {
+      password,
+    },
+  });
+};
 
 export const authServices = {
   login,

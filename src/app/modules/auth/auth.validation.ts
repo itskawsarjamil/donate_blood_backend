@@ -22,7 +22,12 @@ const loginValidationSchema = z.object({
       .min(6, { message: 'Password must be at least 6 characters long' }),
   }),
 });
-
+const refreshTokenValidationSchema = z.object({
+  cookies: z.object({
+    refreshToken: z.string(),
+  }),
+});
 export const authValidationSchema = {
   loginValidationSchema,
+  refreshTokenValidationSchema,
 };
