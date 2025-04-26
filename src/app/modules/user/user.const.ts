@@ -8,3 +8,13 @@ export const bloodType = [
   'O_POSITIVE',
   'O_NEGATIVE',
 ] as const;
+
+export const userSearchableFields = ['name', 'email', 'location'];
+
+export const userQueryFields = [
+  'email',
+  'bloodType',
+  'location',
+  'availability',
+  'searchTerm',
+];

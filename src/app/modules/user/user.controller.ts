@@ -2,6 +2,9 @@ import { Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import { userServices } from './user.services';
 import sendResponse from '../../utils/sendResponse';
+import pick from '../../utils/pick';
+import { userQueryFields, userSearchableFields } from './user.const';
+import { queryOptions } from '../../const';
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
   const result = await userServices.createUser(req.body);
@@ -23,7 +26,10 @@ const getSingleUser = catchAsync(async (req, res) => {
   });
 });
 const getAllUser = catchAsync(async (req, res) => {
-  const result = await userServices.getALLUserFromDB();
+  const filterData = pick(req.query, userQueryFields);
+  const filterOptions = pick(req.query, queryOptions);
+  // console.log(filterData, filterOptions);
+  const result = await userServices.getALLUserFromDB(filterData, filterOptions);
   res.status(200).json({
     success: true,
     message: 'user finding successfull',

@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { bloodType } from './user.const';
+import { bloodType, userSearchableFields } from './user.const';
 import prisma from '../../utils/prisma';
 import { TUser_Profile, TUserUpdate } from './user.interface';
+import { Prisma } from '../../../../generated/prisma';
+import { paginationHelper } from '../../utils/paginationhelper';
 
 const createUser = async (payload: TUser_Profile) => {
   // console.log(payload);
@@ -40,13 +42,65 @@ const getSingleUserFromDB = async (id: string) => {
   });
   return result;
 };
-const getALLUserFromDB = async () => {
+const getALLUserFromDB = async (
+  filterQueryData: Record<string, unknown>,
+  filterQueryOptions: Record<string, unknown>,
+) => {
+  const { searchTerm, ...remainingFilterData } = filterQueryData;
+  const options = paginationHelper.calculatePagination(filterQueryOptions);
+  const andCondition: Prisma.UserWhereInput[] = [];
+  let orCondition: Prisma.UserWhereInput[] = [];
+  if (searchTerm) {
+    orCondition = userSearchableFields.map((field) => {
+      return {
+        [field]: {
+          contains: searchTerm,
+          mode: 'insensitive',
+        },
+      };
+    });
+    andCondition.push({
+      OR: orCondition,
+    });
+  }
+
+  if (remainingFilterData && Object.keys(remainingFilterData).length) {
+    andCondition.push({
+      AND: Object.keys(remainingFilterData).map((key) => ({
+        [key]: {
+          equals: remainingFilterData[key],
+        },
+      })),
+    });
+  }
+  const whereInput: Prisma.UserWhereInput = andCondition.length
+    ? { AND: andCondition }
+    : {};
+
   const result = await prisma.user.findMany({
+    where: whereInput,
+    skip: options.skip,
+    take: options.limit,
     include: {
       UserProfile: true,
     },
+    orderBy: {
+      [options.sortBy]: options.sortOrder,
+    },
   });
-  return result;
+  const total = await prisma.user.count({
+    where: whereInput,
+  });
+
+  return {
+    meta: {
+      total,
+      page: options.page,
+      limit: options.limit,
+    },
+    result,
+  };
+  // return null;
 };
 
 const updateUserIntoDB = async (id: string, payload: TUserUpdate) => {
@@ -76,7 +130,6 @@ const updateUserIntoDB = async (id: string, payload: TUserUpdate) => {
     },
     data: {
       ...finalUserData,
-      something: '',
       UserProfile: {
         update: {
           data: {
