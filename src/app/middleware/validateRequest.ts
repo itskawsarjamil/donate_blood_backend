@@ -11,8 +11,6 @@ const validateRequest = (schema: AnyZodObject) => {
 
     const topLevelKeys = Object.keys(schema.shape);
 
-    console.log(topLevelKeys);
-
     if (topLevelKeys[0] == 'body') {
       req.body = result.body;
     }

@@ -35,7 +35,8 @@ const refreshToken = catchAsync(async (req, res) => {
   });
 });
 const changePassword = catchAsync(async (req, res) => {
-  const result = await authServices.changePassword(req.body);
+  const user = req.user;
+  const result = await authServices.changePassword(user, req.body);
   sendResponse(res, {
     success: true,
     message: 'password changed successffull',

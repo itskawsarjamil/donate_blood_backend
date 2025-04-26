@@ -4,6 +4,7 @@ import { ZodError } from 'zod';
 import { TErrorSources } from '../interfaces/errorTypes';
 import handleZodError from '../errors/handleZodError';
 import { Prisma } from '../../../generated/prisma';
+import AppError from '../errors/apiError';
 
 const globalErrorHandler = (
   error: any,
@@ -28,8 +29,7 @@ const globalErrorHandler = (
     issues = errorData.errorSources;
   }
   // Prisma known errors
-
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  else if (error instanceof Prisma.PrismaClientKnownRequestError) {
     switch (error.code) {
       case 'P2002': {
         const target = (error.meta?.target as string[])?.join(', ');
@@ -63,22 +63,27 @@ const globalErrorHandler = (
     }
   }
   // Prisma validation errors
-  if (error instanceof Prisma.PrismaClientValidationError) {
+  else if (error instanceof Prisma.PrismaClientValidationError) {
     status = 400;
     message = 'Validation error: Check the provided data';
     error = error.message;
   }
 
   // Prisma initialization errors
-  if (error instanceof Prisma.PrismaClientInitializationError) {
+  else if (error instanceof Prisma.PrismaClientInitializationError) {
     status = 500;
     message = 'Prisma failed to connect to the database';
   }
 
   // Prisma panic errors (unexpected)
-  if (error instanceof Prisma.PrismaClientRustPanicError) {
+  else if (error instanceof Prisma.PrismaClientRustPanicError) {
     status = 500;
     message = 'Unexpected Prisma error: Rust panic';
+  } else if (error instanceof AppError) {
+    status = error?.statusCode;
+    message = error.message;
+  } else if (error instanceof Error) {
+    message = error.message;
   }
 
   res.status(status).json({

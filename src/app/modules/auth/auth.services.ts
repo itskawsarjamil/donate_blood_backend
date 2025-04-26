@@ -5,7 +5,7 @@ import { jwtHelper } from '../../utils/jwtHelper';
 import prisma from '../../utils/prisma';
 import bcrypt from 'bcrypt';
 const login = async (payload: { identifier: string; password: string }) => {
-  console.log(payload);
+  //   console.log(payload);
   const user = await prisma.user.findFirst({
     where: {
       OR: [
@@ -22,7 +22,7 @@ const login = async (payload: { identifier: string; password: string }) => {
     throw new AppError(404, 'user not found');
   }
   const comparePass = await bcrypt.compare(payload.password, user.password);
-  console.log(comparePass);
+  //   console.log(comparePass);
   if (!comparePass) {
     throw new AppError(400, 'password do not matched');
   }
@@ -75,7 +75,38 @@ const refreshToken = async (token: string) => {
   };
 };
 
-const changePassword = async (payload: { id: string; password: string }) => {};
+const changePassword = async (
+  userData: any,
+  payload: { oldPassword: string; newPassword: string },
+) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      email: userData.email,
+    },
+  });
+
+  const comparePass = bcrypt.compare(
+    user?.password as string,
+    payload.oldPassword,
+  );
+  if (!comparePass) {
+    throw new AppError(404, 'unauthorized access');
+  }
+  const hashedPassword = await bcrypt.hash(payload.newPassword, 12);
+  await prisma.user.update({
+    where: {
+      email: user?.email,
+    },
+    data: {
+      password: hashedPassword,
+    },
+    include: {
+      UserProfile: true,
+    },
+  });
+
+  return null;
+};
 
 const forgetPassword = async (id: string) => {};
 
