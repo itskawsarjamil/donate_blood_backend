@@ -58,10 +58,22 @@ const deleteSingleUser = catchAsync(async (req, res) => {
   });
 });
 
+const getMyProfile = catchAsync(async (req, res) => {
+  const user = req.user;
+  const result = await userServices.getMyProfile(user.email);
+  sendResponse(res, {
+    success: true,
+    statusCode: 200,
+    message: 'profile update successfull',
+    data: result,
+  });
+});
+
 export const userController = {
   createUser,
   getSingleUser,
   getAllUser,
   updateSingleUser,
   deleteSingleUser,
+  getMyProfile,
 };

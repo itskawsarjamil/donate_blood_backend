@@ -5,6 +5,7 @@ import { TUser_Profile, TUserUpdate } from './user.interface';
 import { Prisma } from '../../../../generated/prisma';
 import { paginationHelper } from '../../utils/paginationhelper';
 import bcrypt from 'bcrypt';
+import AppError from '../../errors/apiError';
 
 const createUser = async (payload: TUser_Profile) => {
   // console.log(payload);
@@ -171,10 +172,36 @@ const deleteSingleUserFromDB = async (id: string) => {
 
   return null;
 };
+const getMyProfile = async (email: string) => {
+  const result = await prisma.user.findFirst({
+    where: {
+      email: email,
+    },
+    select: {
+      name: true,
+      email: true,
+      location: true,
+      bloodType: true,
+      availability: true,
+      password: false,
+      UserProfile: true,
+    },
+  });
+  if (!result) {
+    throw new AppError(404, 'user not found');
+  }
+  return result;
+};
+
+const updateMyProfile = async (email: string, payload: TUserUpdate) => {
+  return null;
+};
 export const userServices = {
   createUser,
   getSingleUserFromDB,
   getALLUserFromDB,
   updateUserIntoDB,
   deleteSingleUserFromDB,
+  getMyProfile,
+  updateMyProfile,
 };
