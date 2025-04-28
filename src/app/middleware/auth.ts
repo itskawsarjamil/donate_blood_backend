@@ -7,6 +7,9 @@ import prisma from '../utils/prisma';
 const auth = () => {
   return catchAsync(async (req, res, next) => {
     const accessToken = req.headers.authorization;
+    if (!accessToken) {
+      throw new AppError(401, 'token not found');
+    }
     const decoded = jwtHelper.verifyToken(
       accessToken as string,
       config.jwt.jwt_secret as string,

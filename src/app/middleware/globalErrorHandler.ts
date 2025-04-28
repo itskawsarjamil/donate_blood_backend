@@ -5,6 +5,7 @@ import { TErrorSources } from '../interfaces/errorTypes';
 import handleZodError from '../errors/handleZodError';
 import { Prisma } from '../../../generated/prisma';
 import AppError from '../errors/apiError';
+import multer from 'multer';
 
 const globalErrorHandler = (
   error: any,
@@ -83,6 +84,8 @@ const globalErrorHandler = (
     status = error?.statusCode;
     message = error.message;
   } else if (error instanceof Error) {
+    message = error.message;
+  } else if (error instanceof multer.MulterError) {
     message = error.message;
   }
 

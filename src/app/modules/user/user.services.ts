@@ -193,7 +193,15 @@ const getMyProfile = async (email: string) => {
   return result;
 };
 
-const updateMyProfile = async (email: string, payload: TUserUpdate) => {
+const updateMyProfile = async (
+  file: any,
+  email: string,
+  payload: TUserUpdate,
+) => {
+  if (file) {
+    const imgName = '';
+    const path = file?.path;
+  }
   return null;
 };
 export const userServices = {

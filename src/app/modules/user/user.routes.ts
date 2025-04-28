@@ -3,6 +3,7 @@ import { userController } from './user.controller';
 import validateRequest from '../../middleware/validateRequest';
 import { userValidationSchema } from './user.validation';
 import auth from '../../middleware/auth';
+import { fileUploader } from '../../utils/fileUploader';
 
 const router = Router();
 
@@ -23,5 +24,16 @@ router.patch(
 router.delete('/delete-single-user/:userId', userController.deleteSingleUser);
 
 router.get('/get-my-profile', auth(), userController.getMyProfile);
+
+router.patch(
+  '/update-my-profile',
+  auth(),
+  fileUploader.upload.single('file'),
+  (req, res, next) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
+  userController.updateMyProfile,
+);
 
 export const userRoutes = router;

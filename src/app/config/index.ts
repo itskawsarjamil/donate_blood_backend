@@ -20,4 +20,9 @@ export default {
     email: process.env.EMAIL,
     app_pass: process.env.APP_PASS,
   },
+  cloudinary: {
+    name: process.env.CLOUD_NAME,
+    key: process.env.CLOUD_API_KEY,
+    secret: process.env.CLOUD_API_SECRET,
+  },
 };

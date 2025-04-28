@@ -69,6 +69,21 @@ const getMyProfile = catchAsync(async (req, res) => {
   });
 });
 
+const updateMyProfile = catchAsync(async (req, res) => {
+  const file = req.file;
+
+  const result = await userServices.updateMyProfile(
+    file,
+    req.user.email,
+    req.body,
+  );
+  res.status(200).json({
+    success: true,
+    message: 'user update successfull',
+    data: result,
+  });
+});
+
 export const userController = {
   createUser,
   getSingleUser,
@@ -76,4 +91,5 @@ export const userController = {
   updateSingleUser,
   deleteSingleUser,
   getMyProfile,
+  updateMyProfile,
 };
