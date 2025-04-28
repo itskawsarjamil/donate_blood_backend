@@ -3,6 +3,7 @@ import multer from 'multer';
 import config from '../config';
 import fs from 'fs';
 import path from 'path';
+import { ICloudinaryResponse } from '../interfaces/file';
 
 cloudinary.config({
   cloud_name: config.cloudinary.name,
@@ -19,27 +20,23 @@ const storage = multer.diskStorage({
   },
 });
 
-const sendImageToCloudinary = async (filePath: string, imageName: string) => {
+const sendImageToCloudinary = async (
+  filePath: string,
+): Promise<UploadApiResponse | undefined> => {
   return new Promise((resolve, rejects) => {
-    cloudinary.uploader.upload(
-      filePath,
-      {
-        public_id: imageName,
-      },
-      function (error, result) {
-        if (error) {
-          rejects(error);
+    cloudinary.uploader.upload(filePath, function (error, result) {
+      if (error) {
+        rejects(error);
+      }
+      resolve(result as UploadApiResponse);
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log('file is deleted');
         }
-        resolve(result as UploadApiResponse);
-        fs.unlink(filePath, (err) => {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log('file is deleted');
-          }
-        });
-      },
-    );
+      });
+    });
   });
   // const result = Promise.resolve(cloudinary.uploader.upload(file));
 };

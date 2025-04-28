@@ -6,6 +6,7 @@ import { Prisma } from '../../../../generated/prisma';
 import { paginationHelper } from '../../utils/paginationhelper';
 import bcrypt from 'bcrypt';
 import AppError from '../../errors/apiError';
+import { fileUploader } from '../../utils/fileUploader';
 
 const createUser = async (payload: TUser_Profile) => {
   // console.log(payload);
@@ -201,6 +202,8 @@ const updateMyProfile = async (
   if (file) {
     const imgName = '';
     const path = file?.path;
+    const uploadToCloudinary = await fileUploader.sendImageToCloudinary(path);
+    const secure_url = uploadToCloudinary?.secure_url;
   }
   return null;
 };
