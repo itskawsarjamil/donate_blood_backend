@@ -199,13 +199,14 @@ const updateMyProfile = async (
   email: string,
   payload: TUserUpdate,
 ) => {
+  let secure_url = '';
   if (file) {
     const imgName = '';
     const path = file?.path;
     const uploadToCloudinary = await fileUploader.sendImageToCloudinary(path);
-    const secure_url = uploadToCloudinary?.secure_url;
-
-const userKeys = ['name', 'bloodType', 'location', 'availability'];
+    secure_url = uploadToCloudinary?.secure_url as string;
+  }
+  const userKeys = ['name', 'bloodType', 'location', 'availability'];
   const userProfileKeys = ['bio', 'age', 'lastDonationDate'];
 
   const FinalUserProfileData: Record<string, unknown> = {};
@@ -221,13 +222,9 @@ const userKeys = ['name', 'bloodType', 'location', 'availability'];
     }
   }
 
-  // console.log({
-  //   ...finalUserData,
-  //   ...FinalUserProfileData,
-  // });
   const result = await prisma.user.update({
     where: {
-      email:email,
+      email: email,
     },
     data: {
       ...finalUserData,
@@ -243,7 +240,7 @@ const userKeys = ['name', 'bloodType', 'location', 'availability'];
       UserProfile: true,
     },
   });
-  return result;
+  return result;
 };
 export const userServices = {
   createUser,
