@@ -4,8 +4,14 @@ import { requestController } from './request.controller';
 
 const router = Router();
 
-router.get('get-all-request', auth(), requestController.getAllRequest);
+router.get('/get-all-request', auth(), requestController.getAllRequest);
 
-router.post('create-request', auth(), requestController.createRequest);
+router.post('/create-request', auth(), requestController.createRequest);
 
-router.patch('update-request', auth(), requestController.updateRequest);
+router.patch(
+  '/update-request/:requestId',
+  auth(),
+  requestController.updateRequest,
+);
+
+export const requestRoutes = router;

@@ -28,7 +28,8 @@ const getAllRequest = catchAsync(async (req, res) => {
 const updateRequest = catchAsync(async (req, res) => {
   const payload = req.body;
   const user = req.user;
-  const result = await requestServices.updateRequest(user, payload);
+  const requestId = req.params.requestId;
+  const result = await requestServices.updateRequest(user, requestId, payload);
   sendResponse(res, {
     success: true,
     statusCode: 200,
