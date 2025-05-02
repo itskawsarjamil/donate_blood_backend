@@ -1,7 +1,6 @@
 export type TRequest = {
-  donorId: string;
-  phoneNumber: string;
-  dateOfDonation: string;
+  requesterPhoneNumber: string;
+  dateOfDonation: Date;
   hospitalName: string;
   hospitalAddress: string;
   reason: string;

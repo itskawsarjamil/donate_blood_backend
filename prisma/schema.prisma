@@ -15,6 +15,94 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id              String         @id @default(uuid())
+  name            String
+  email           String         @unique
+  password        String
+  bloodType       BloodGroup
+  location        String
+  availability    Boolean
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  UserProfile     UserProfile?
+  RequestsMade    Appointment[]  @relation("requester")
+  RequestsRecieve Appointment[]  @relation("donor")
+  BloodRequest    BloodRequest[]
+  // Appointment  Appointment[]
+  Review          Review[]
+}
+
+model UserProfile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  bio              String
+  age              Int
+  lastDonationDate String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model BloodRequest {
+  id String @id @default(uuid())
+
+  requesterId          String
+  requester            User          @relation(fields: [requesterId], references: [id])
+  requesterPhoneNumber String
+  dateOfDonation       DateTime
+  hospitalName         String
+  hospitalAddress      String
+  reason               String
+  requestStatus        RequestStatus @default(PENDING)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  Appointment Appointment?
+}
+
+model Appointment {
+  id                String            @id @default(uuid())
+  bloodRequestId    String            @unique
+  bloodRequest      BloodRequest      @relation(fields: [bloodRequestId], references: [id])
+  requesterId       String
+  requester         User              @relation("requester", fields: [requesterId], references: [id])
+  donorId           String
+  donor             User              @relation("donor", fields: [donorId], references: [id])
+  appointmentStatus AppointmentStatus @default(PENDING)
+  videoCallingId    String
+  needTransportFee  Boolean
+  transportFee      Int?              @default(0)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  Payment           Payment?
+  Review            Review?
+}
+
+model Payment {
+  id                 String        @id @default(uuid())
+  appointmentId      String        @unique
+  appointment        Appointment   @relation(fields: [appointmentId], references: [id])
+  amount             Int           @default(0)
+  transactionId      String        @unique
+  status             PaymentStatus @default(UNPAID)
+  paymentGatewayData Json?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+model Review {
+  id            String      @id @default(uuid())
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
+  reviewerId    String
+  reviewer      User        @relation(fields: [reviewerId], references: [id])
+  rating        Int
+  comment       String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
 enum BloodGroup {
   A_POSITIVE
   A_NEGATIVE
@@ -32,44 +120,15 @@ enum RequestStatus {
   REJECTED
 }
 
-model User {
-  id              String       @id @default(uuid())
-  name            String
-  email           String       @unique
-  password        String
-  bloodType       BloodGroup
-  location        String
-  availability    Boolean
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  UserProfile     UserProfile?
-  RequestsMade    Request[]    @relation("requester")
-  RequestsRecieve Request[]    @relation("donar")
+enum AppointmentStatus {
+  PENDING
+  SCHEDULED
+  INPROGRESS
+  COMPLETED
+  CANCELED
 }
 
-model UserProfile {
-  id               String   @id @default(uuid())
-  userId           String   @unique
-  user             User     @relation(fields: [userId], references: [id])
-  bio              String
-  age              Int
-  lastDonationDate String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-}
-
-model Request {
-  id              String        @id @default(uuid())
-  donorId         String
-  donor           User          @relation("donar", fields: [donorId], references: [id])
-  requesterId     String
-  requester       User          @relation("requester", fields: [requesterId], references: [id])
-  phoneNumber     String
-  dateOfDonation  String
-  hospitalName    String
-  hospitalAddress String
-  reason          String
-  requestStatus   RequestStatus @default(PENDING)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+enum PaymentStatus {
+  PAID
+  UNPAID
 }

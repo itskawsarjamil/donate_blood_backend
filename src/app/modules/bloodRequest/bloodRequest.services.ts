@@ -1,9 +1,11 @@
 import { JwtPayload } from 'jsonwebtoken';
 import AppError from '../../errors/apiError';
 import prisma from '../../utils/prisma';
-import { TRequest } from './request.interface';
+import { TRequest } from './bloodRequest.interface';
+import { RequestStatus } from '../../../../generated/prisma';
 
-const createRequest = async (user: JwtPayload, payload: TRequest) => {
+const createBloodRequest = async (user: JwtPayload, payload: TRequest) => {
+  // console.log(payload);
   const requesterInfo = await prisma.user.findFirst({
     where: {
       email: user.email,
@@ -12,30 +14,18 @@ const createRequest = async (user: JwtPayload, payload: TRequest) => {
   if (!requesterInfo) {
     throw new AppError(404, 'requester not found');
   }
-
-  const donar = await prisma.user.findFirst({
-    where: {
-      id: payload.donorId,
-    },
-  });
-  if (!donar) {
-    throw new AppError(404, 'donar not found');
-  }
-  //TODO: later i have to check is there anywhere he is already booked for giving blood
-  //TODO: later check is he available
-  //TODO: is his schedule free that dateofDonation time and date
-  const result = await prisma.request.create({
+  const result = await prisma.bloodRequest.create({
     data: {
       ...payload,
       requesterId: requesterInfo.id,
     },
     include: {
-      donor: true,
+      requester: true,
     },
   });
   return result;
 };
-const getAllRequest = async (user: JwtPayload) => {
+const getAllBloodRequest = async (user: JwtPayload) => {
   const userInfo = await prisma.user.findFirst({
     where: {
       email: user.email,
@@ -44,9 +34,19 @@ const getAllRequest = async (user: JwtPayload) => {
   if (!userInfo) {
     throw new AppError(404, 'user not found');
   }
-  const result = await prisma.request.findMany({
+
+  const result = await prisma.bloodRequest.findMany({
     where: {
-      donorId: userInfo.id,
+      AND: [
+        {
+          requestStatus: RequestStatus.PENDING,
+        },
+        {
+          dateOfDonation: {
+            gte: new Date(),
+          },
+        },
+      ],
     },
     include: {
       requester: {
@@ -64,7 +64,7 @@ const getAllRequest = async (user: JwtPayload) => {
   return result;
 };
 
-const updateRequest = async (
+const updateBloodRequest = async (
   user: JwtPayload,
   id: string,
   payload: {
@@ -80,14 +80,14 @@ const updateRequest = async (
     throw new AppError(404, 'user not found');
   }
 
-  const result = await prisma.request.update({
+  const result = await prisma.bloodRequest.update({
     where: { id: id },
     data: { requestStatus: payload.status },
   });
   return result;
 };
 export const requestServices = {
-  createRequest,
-  getAllRequest,
-  updateRequest,
+  createBloodRequest,
+  getAllBloodRequest,
+  updateBloodRequest,
 };

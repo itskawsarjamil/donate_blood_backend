@@ -1,11 +1,21 @@
 import catchAsync from '../../utils/catchAsync';
+import { mergeDateandTime } from '../../utils/mergeDateandTime';
 import sendResponse from '../../utils/sendResponse';
-import { requestServices } from './request.services';
+import { requestServices } from './bloodRequest.services';
 
 const createRequest = catchAsync(async (req, res) => {
   const payload = req.body;
+  const {
+    dateOfDonation: userGivenDate,
+    timeOfDonation,
+    ...remaining
+  } = payload;
+  const dateOfDonation = mergeDateandTime(userGivenDate, timeOfDonation);
   const user = req.user;
-  const result = await requestServices.createRequest(user, payload);
+  const result = await requestServices.createBloodRequest(user, {
+    ...remaining,
+    dateOfDonation,
+  });
   sendResponse(res, {
     success: true,
     statusCode: 200,
@@ -16,7 +26,7 @@ const createRequest = catchAsync(async (req, res) => {
 
 const getAllRequest = catchAsync(async (req, res) => {
   const user = req.user;
-  const result = await requestServices.getAllRequest(user);
+  const result = await requestServices.getAllBloodRequest(user);
   sendResponse(res, {
     success: true,
     statusCode: 200,
@@ -29,7 +39,11 @@ const updateRequest = catchAsync(async (req, res) => {
   const payload = req.body;
   const user = req.user;
   const requestId = req.params.requestId;
-  const result = await requestServices.updateRequest(user, requestId, payload);
+  const result = await requestServices.updateBloodRequest(
+    user,
+    requestId,
+    payload,
+  );
   sendResponse(res, {
     success: true,
     statusCode: 200,
